@@ -1,0 +1,31 @@
+{
+  "name": "action-publint",
+  "version": "0.0.0-development",
+  "description": "GitHub Action that runs Publint",
+  "author": "Kirk Eaton <contact@kirkeaton.ca>",
+  "dependencies": {
+    "@actions/core": "1.11.1",
+    "publint": "0.2.12"
+  },
+  "devDependencies": {
+    "@kirkeaton/prettier-config": "1.0.3",
+    "@kirkeaton/semantic-release-config": "1.0.2",
+    "@kirkeaton/tsconfig": "1.0.0",
+    "@types/node": "22.10.2",
+    "esbuild": "0.24.2",
+    "prettier": "3.4.2",
+    "semantic-release": "24.2.0",
+    "typescript": "5.7.2"
+  },
+  "exports": "./dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "license": "BSD-3-Clause",
+  "private": true,
+  "scripts": {
+    "build": "pnpm clean && ./build.mjs",
+    "clean": "rm -rf dist"
+  },
+  "type": "commonjs"
+}

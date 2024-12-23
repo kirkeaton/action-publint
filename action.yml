@@ -1,0 +1,26 @@
+name: 'Lint package.json'
+description: 'GitHub Action that lints a package.json file for packaging errors.'
+author: 'Kirk Eaton <contact@kirkeaton.ca>'
+branding:
+  color: 'green'
+  icon: 'package'
+inputs:
+  level:
+    description: 'The level of messages to log'
+    type: 'choice'
+    default: 'suggestion'
+    options:
+      - 'suggestion'
+      - 'warning'
+      - 'error'
+  pkg-dir:
+    description: 'Path to your package that contains a package.json file.'
+    type: 'string'
+    default: '.'
+  strict:
+    description: 'Report warnings as errors.'
+    type: 'boolean'
+    default: false
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
