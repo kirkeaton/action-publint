@@ -22,7 +22,12 @@
     "dist"
   ],
   "license": "BSD-3-Clause",
+  "packageManager": "pnpm@9.15.1",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kirkeaton/action-publint.git"
+  },
   "scripts": {
     "build": "pnpm clean && ./build.mjs",
     "clean": "rm -rf dist"
