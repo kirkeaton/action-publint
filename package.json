@@ -29,8 +29,8 @@
     "url": "git+https://github.com/kirkeaton/action-publint.git"
   },
   "scripts": {
-    "build": "pnpm clean && ./build.mjs",
+    "build": "pnpm clean && ./build.js",
     "clean": "rm -rf dist"
   },
-  "type": "commonjs"
+  "type": "module"
 }
