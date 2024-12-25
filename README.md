@@ -1,6 +1,6 @@
 # action-publint
 
-GitHub Action that lints a package.json file for packaging errors. Uses [Publint](https://publint.dev/) as the linter.
+GitHub Action that lints a package.json file for packaging errors using [Publint](https://publint.dev/).
 
 ## Usage
 
