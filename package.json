@@ -22,7 +22,7 @@
     "dist"
   ],
   "license": "BSD-3-Clause",
-  "packageManager": "pnpm@9.15.2",
+  "packageManager": "pnpm@9.15.3",
   "private": true,
   "repository": {
     "type": "git",
