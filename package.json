@@ -5,7 +5,7 @@
   "author": "Kirk Eaton <contact@kirkeaton.ca>",
   "dependencies": {
     "@actions/core": "1.11.1",
-    "publint": "0.3.0"
+    "publint": "0.3.1"
   },
   "devDependencies": {
     "@kirkeaton/prettier-config": "1.0.3",
