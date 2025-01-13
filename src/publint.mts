@@ -27,8 +27,9 @@ export const runPublint = async (): Promise<boolean> => {
 
   // Run publint
   const { messages } = await publint({
-    pkgDir,
     level,
+    pack: false,
+    pkgDir,
     strict,
   });
 
