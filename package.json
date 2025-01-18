@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "@kirkeaton/prettier-config": "1.0.4",
-    "@kirkeaton/semantic-release-config": "1.0.2",
+    "@kirkeaton/semantic-release-config": "1.0.3",
     "@kirkeaton/tsconfig": "1.0.0",
     "@types/node": "22.10.7",
     "esbuild": "0.24.2",
