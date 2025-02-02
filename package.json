@@ -3,6 +3,9 @@
   "version": "0.0.0-development",
   "description": "GitHub Action that lints a package.json file for packaging errors.",
   "author": "Kirk Eaton <contact@kirkeaton.ca>",
+  "bugs": {
+    "url": "https://github.com/kirkeaton/action-publint/issues"
+  },
   "dependencies": {
     "@actions/core": "1.11.1",
     "publint": "0.3.2"
@@ -20,6 +23,12 @@
   "exports": "./dist/index.js",
   "files": [
     "dist"
+  ],
+  "homepage": "https://github.com/kirkeaton/action-publint#readme",
+  "keywords": [
+    "actions",
+    "publish",
+    "lint"
   ],
   "license": "BSD-3-Clause",
   "packageManager": "pnpm@9.15.4",
