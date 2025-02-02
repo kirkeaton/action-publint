@@ -29,7 +29,7 @@ jobs:
           node-version-file: '.nvmrc'
           cache: 'pnpm'
       - run: pnpm install
-      - run: pnpm prettier --check "**/*.{json,md,mjs,mts}"
+      - run: pnpm prettier --check "**/*.{js,json,md,ts}"
   check_types:
     name: Check types
     runs-on: ubuntu-latest
