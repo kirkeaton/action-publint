@@ -20,7 +20,7 @@
     "semantic-release": "24.2.1",
     "typescript": "5.7.3"
   },
-  "exports": "./dist/index.js",
+  "exports": "./dist/index.cjs",
   "files": [
     "dist"
   ],
@@ -38,8 +38,8 @@
     "url": "git+https://github.com/kirkeaton/action-publint.git"
   },
   "scripts": {
-    "build": "pnpm clean && ./build.mjs",
+    "build": "pnpm clean && ./build.js",
     "clean": "rm -rf dist"
   },
-  "type": "commonjs"
+  "type": "module"
 }
