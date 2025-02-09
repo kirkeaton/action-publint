@@ -32,6 +32,11 @@
   ],
   "license": "BSD-3-Clause",
   "packageManager": "pnpm@10.2.1",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
   "private": true,
   "repository": {
     "type": "git",
