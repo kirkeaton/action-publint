@@ -24,6 +24,7 @@
   "files": [
     "dist"
   ],
+  "funding": "https://kirkeaton.ca/sponsor",
   "homepage": "https://github.com/kirkeaton/action-publint#readme",
   "keywords": [
     "actions",
