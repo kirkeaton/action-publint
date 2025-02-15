@@ -28,5 +28,5 @@ jobs:
         run: pnpm build
       - name: Test action
         uses: ./
-      - name: Check dist
+      - name: Check dist for changes
         run: git diff --exit-code --quiet ./dist
