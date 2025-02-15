@@ -47,5 +47,5 @@
     "build": "pnpm clean && ./build.mjs",
     "clean": "rm -rf dist"
   },
-  "type": "commonjs"
+  "type": "module"
 }
