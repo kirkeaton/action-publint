@@ -7,7 +7,7 @@ GitHub Action that lints a package.json file for packaging errors using [Publint
 See [action.yml](action.yml)
 
 ```yaml
-- uses: kirkeaton/action-publint@v1
+- uses: kirkeaton/action-publint@v2
   with:
     # The level of messages to log.
     # - suggestion: logs all messages
