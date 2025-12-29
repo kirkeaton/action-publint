@@ -12,12 +12,10 @@
   },
   "devDependencies": {
     "@kirkeaton/prettier-config": "1.0.5",
-    "@kirkeaton/semantic-release-config": "2.0.0",
     "@kirkeaton/tsconfig": "2.1.0",
     "@types/node": "24.10.4",
     "esbuild": "0.27.2",
     "prettier": "3.7.4",
-    "semantic-release": "25.0.2",
     "typescript": "5.9.3"
   },
   "engines": {
@@ -35,20 +33,17 @@
     "lint"
   ],
   "license": "BSD-3-Clause",
-  "packageManager": "pnpm@10.26.2",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild"
-    ]
-  },
   "private": true,
   "repository": {
     "type": "git",
     "url": "git+https://github.com/kirkeaton/action-publint.git"
   },
   "scripts": {
-    "build": "pnpm clean && ./build.mjs",
-    "clean": "rm -rf dist"
+    "build": "npm run clean && ./build.mjs",
+    "clean": "rm -rf dist",
+    "format": "prettier \"**/*.{json,md,mjs,mts}\" --write",
+    "lint": "prettier \"**/*.{json,md,mjs,mts}\" --check",
+    "typecheck": "tsc --noEmit"
   },
   "type": "commonjs"
 }
