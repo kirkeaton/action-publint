@@ -7,7 +7,7 @@
     "url": "https://github.com/kirkeaton/action-publint/issues"
   },
   "dependencies": {
-    "@actions/core": "2.0.2",
+    "@actions/core": "2.0.3",
     "publint": "0.3.17"
   },
   "devDependencies": {
