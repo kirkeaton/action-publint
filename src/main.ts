@@ -1,6 +1,6 @@
 import { setFailed } from '@actions/core';
 
-import { runPublint } from './publint.mjs';
+import { runPublint } from './publint.js';
 
 const run = async () => {
   try {
