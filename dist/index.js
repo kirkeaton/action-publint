@@ -17616,7 +17616,8 @@ async function packAsListWithPack(dir, packageManager, ignoreScripts) {
 * @returns {string[]}
 */
 function parseNpmPackJson(stdoutJson) {
-	return stdoutJson[0].files.map((file) => file.path);
+	if (Array.isArray(stdoutJson)) return stdoutJson[0].files.map((file) => file.path);
+	else return stdoutJson[Object.keys(stdoutJson)[0]].files.map((file) => file.path);
 }
 /**
 * @param {any} stdoutJson
@@ -17646,6 +17647,15 @@ async function getPackDirectory(dir, packageManager) {
 	} catch {}
 	return dir;
 }
+
+//#endregion
+//#region node_modules/@publint/pack/src/shared/constants.js
+const supportedPackageManagers = [
+	"npm",
+	"yarn",
+	"pnpm",
+	"bun"
+];
 
 //#endregion
 //#region node_modules/publint/src/node/vfs-node.js
@@ -17708,10 +17718,35 @@ const commonInternalPaths = [
 	"test/",
 	"tests/",
 	"__tests__/",
+	"e2e/",
+	".circleci/",
+	".github/",
+	".husky/",
+	".vscode/",
 	".prettierrc",
+	".prettierignore",
 	"prettier.config.js",
 	".eslintrc",
-	".eslintrc.js"
+	".eslintrc.js",
+	".eslintignore",
+	"eslint.config.js",
+	"eslint.config.mjs",
+	"eslint.config.cjs",
+	".travis.yml",
+	"azure-pipelines.yml",
+	"appveyor.yml",
+	".gitattributes",
+	".gitignore",
+	"package-lock.json",
+	"yarn.lock",
+	"pnpm-lock.yaml",
+	"bun.lock",
+	"bun.lockb",
+	"CONTRIBUTING.md",
+	"CODE_OF_CONDUCT.md",
+	"CODEOWNERS",
+	"Dockerfile",
+	"tsconfig.tsbuildinfo"
 ];
 const licenseFiles = [
 	/^copying/i,
@@ -17772,7 +17807,7 @@ const SINGLELINE_COMMENTS_RE = /\/\/.*/g;
 function stripComments(code) {
 	return code.replace(MULTILINE_COMMENTS_RE, "").replace(SINGLELINE_COMMENTS_RE, "");
 }
-const GIT_URL_RE = /^(?:(git\+https?|git\+ssh|https?|ssh|git):\/\/)?(?:[\w._-]+@)?([\w.-]+)(?::([\w\d-]+))?(\/[\w._/-]+)\/?$/;
+const GIT_URL_RE = /^(?:(git\+https?|git\+ssh|https?|ssh|git):\/\/)?(?:[^@/]+@)?([\w.-]+)(?::([\w\d-]+))?(\/[^?#]+)\/?$/;
 /**
 * @param {string} url
 */
@@ -19281,14 +19316,13 @@ async function publint(options) {
 * @return {Promise<import('@publint/pack').PackageManager>}
 */
 async function detectPackageManager(pkgDir, pack) {
-	let packageManager = pack;
-	if (packageManager === "auto") {
+	if (pack === "auto") {
 		const { detect } = await Promise.resolve().then(() => (init_detect(), detect_exports));
-		let detected = (await detect({ cwd: pkgDir }))?.name ?? "npm";
-		if (detected === "deno") detected = "npm";
-		packageManager = detected;
+		const detected = (await detect({ cwd: pkgDir }))?.name ?? "npm";
+		if (supportedPackageManagers.includes(detected)) return detected;
+		else return "npm";
 	}
-	return packageManager;
+	return pack;
 }
 /**
 * @param {string} pkgDir
