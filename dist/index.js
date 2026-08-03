@@ -62,7 +62,7 @@ var __copyProps = (to, from, except, desc) => {
 	}
 	return to;
 };
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", {
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp(target, "default", {
 	value: mod,
 	enumerable: true
 }) : target, mod));
@@ -1833,7 +1833,7 @@ var require_dispatcher_base = /* @__PURE__ */ __commonJSMin(((exports, module) =
 		get webSocketOptions() {
 			return {
 				maxFragments: this[kWebSocketOptions].maxFragments ?? 131072,
-				maxPayloadSize: this[kWebSocketOptions].maxPayloadSize ?? 128 * 1024 * 1024
+				maxPayloadSize: this[kWebSocketOptions].maxPayloadSize ?? 134217728
 			};
 		}
 		get destroyed() {
@@ -1885,7 +1885,7 @@ var require_dispatcher_base = /* @__PURE__ */ __commonJSMin(((exports, module) =
 			}
 			if (callback === void 0) return new Promise((resolve, reject) => {
 				this.destroy(err, (err, data) => {
-					return err ? reject(err) : resolve(data);
+					return err ? /* istanbul ignore next: should never error */ reject(err) : resolve(data);
 				});
 			});
 			if (typeof callback !== "function") throw new InvalidArgumentError("invalid callback");
@@ -2357,7 +2357,7 @@ var require_connect = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				assert$24(!httpSocket, "httpSocket can only be sent on TLS update");
 				port = port || 80;
 				socket = net$1.connect({
-					highWaterMark: 64 * 1024,
+					highWaterMark: 65536,
 					...options,
 					localAddress,
 					port,
@@ -3846,10 +3846,7 @@ var require_util$6 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				case "strict-origin-when-cross-origin":
 					if (request.origin && urlHasHttpsScheme(request.origin) && !urlHasHttpsScheme(requestCurrentURL(request))) serializedOrigin = null;
 					break;
-				case "same-origin":
-					if (!sameOrigin(request, requestCurrentURL(request))) serializedOrigin = null;
-					break;
-				default:
+				case "same-origin": if (!sameOrigin(request, requestCurrentURL(request))) serializedOrigin = null;
 			}
 			request.headersList.append("origin", serializedOrigin, true);
 		}
@@ -4131,9 +4128,7 @@ var require_util$6 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					case "value":
 						result = value;
 						break;
-					case "key+value":
-						result = [key, value];
-						break;
+					case "key+value": result = [key, value];
 				}
 				return {
 					value: result,
@@ -6931,7 +6926,7 @@ var require_client = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 //#region node_modules/undici/lib/dispatcher/fixed-queue.js
 var require_fixed_queue = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const kSize = 2048;
-	const kMask = kSize - 1;
+	const kMask = 2047;
 	var FixedCircularBuffer = class {
 		constructor() {
 			this.bottom = 0;
@@ -7724,7 +7719,7 @@ var require_retry_handler = /* @__PURE__ */ __commonJSMin(((exports, module) => 
 			this.retryOpts = {
 				retry: retryFn ?? RetryHandler[kRetryHandlerDefaultRetry],
 				retryAfter: retryAfter ?? true,
-				maxTimeout: maxTimeout ?? 30 * 1e3,
+				maxTimeout: maxTimeout ?? 3e4,
 				minTimeout: minTimeout ?? 500,
 				timeoutFactor: timeoutFactor ?? 2,
 				maxRetries: maxRetries ?? 5,
@@ -7971,7 +7966,7 @@ var require_readable = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const kContentLength = Symbol("kContentLength");
 	const noop = () => {};
 	var BodyReadable = class extends Readable$2 {
-		constructor({ resume, abort, contentType = "", contentLength, highWaterMark = 64 * 1024 }) {
+		constructor({ resume, abort, contentType = "", contentLength, highWaterMark = 65536 }) {
 			super({
 				autoDestroy: true,
 				read: resume,
@@ -8050,7 +8045,7 @@ var require_readable = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			return this[kBody];
 		}
 		async dump(opts) {
-			let limit = Number.isFinite(opts?.limit) ? opts.limit : 128 * 1024;
+			let limit = Number.isFinite(opts?.limit) ? opts.limit : 131072;
 			const signal = opts?.signal;
 			if (signal != null && (typeof signal !== "object" || !("aborted" in signal))) throw new InvalidArgumentError("signal must be an AbortSignal");
 			signal?.throwIfAborted();
@@ -8190,7 +8185,7 @@ var require_util$5 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const assert$13 = __require("node:assert");
 	const { ResponseStatusCodeError } = require_errors();
 	const { chunksDecode } = require_readable();
-	const CHUNK_LIMIT = 128 * 1024;
+	const CHUNK_LIMIT = 131072;
 	async function getResolveErrorBodyCallback({ callback, body, contentType, statusCode, statusMessage, headers }) {
 		assert$13(body);
 		let chunks = [];
@@ -9717,7 +9712,7 @@ var require_dump = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const { InvalidArgumentError, RequestAbortedError } = require_errors();
 	const DecoratorHandler = require_decorator_handler();
 	var DumpHandler = class extends DecoratorHandler {
-		#maxSize = 1024 * 1024;
+		#maxSize = 1048576;
 		#abort = null;
 		#dumped = false;
 		#aborted = false;
@@ -9767,7 +9762,7 @@ var require_dump = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			this.#handler.onComplete(trailers);
 		}
 	};
-	function createDumpInterceptor({ maxSize: defaultMaxSize } = { maxSize: 1024 * 1024 }) {
+	function createDumpInterceptor({ maxSize: defaultMaxSize } = { maxSize: 1048576 }) {
 		return (dispatch) => {
 			return function Intercept(opts, handler) {
 				const { dumpMaxSize = defaultMaxSize } = opts;
@@ -9939,9 +9934,7 @@ var require_dns = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 					this.#handler.onError(err);
 					return;
 				case "ENOTFOUND": this.#state.deleteRecord(this.#origin);
-				default:
-					this.#handler.onError(err);
-					break;
+				default: this.#handler.onError(err);
 			}
 		}
 	};
@@ -15385,7 +15378,6 @@ var require_eventsource_stream = /* @__PURE__ */ __commonJSMin(((exports, module
 				default:
 					if (this.buffer[0] === BOM[0] && this.buffer[1] === BOM[1] && this.buffer[2] === BOM[2]) this.buffer = this.buffer.subarray(3);
 					this.checkBOM = false;
-					break;
 			}
 			while (this.pos < this.buffer.length) {
 				if (this.eventEndCheck) {
@@ -15451,9 +15443,7 @@ var require_eventsource_stream = /* @__PURE__ */ __commonJSMin(((exports, module
 				case "id":
 					if (isValidLastEventId(value)) event[field] = value;
 					break;
-				case "event":
-					if (value.length > 0) event[field] = value;
-					break;
+				case "event": if (value.length > 0) event[field] = value;
 			}
 		}
 		/**
@@ -17405,18 +17395,14 @@ async function pack(dir, opts) {
 		case "bun":
 			command.push("--destination", packDestination);
 			break;
-		default:
-			command.push("--pack-destination", packDestination);
-			break;
+		default: command.push("--pack-destination", packDestination);
 	}
 	if (opts?.ignoreScripts) switch (packageManager) {
 		case "pnpm":
 			command.push("--config.ignore-scripts=true");
 			break;
 		case "yarn": break;
-		default:
-			command.push("--ignore-scripts");
-			break;
+		default: command.push("--ignore-scripts");
 	}
 	const output = await z(command[0], command.slice(1), { nodeOptions: { cwd: dir } });
 	const tarballFile = await fs.readdir(packDestination).then((files) => {
@@ -17448,9 +17434,7 @@ async function packAsJson(dir, opts) {
 			command.push("--config.ignore-scripts=true");
 			break;
 		case "yarn": break;
-		default:
-			command.push("--ignore-scripts");
-			break;
+		default: command.push("--ignore-scripts");
 	}
 	let { stdout } = await z(command[0], command.slice(1), { nodeOptions: { cwd: dir } });
 	try {
@@ -17605,7 +17589,8 @@ async function packAsListWithPack(dir, packageManager, ignoreScripts) {
 	});
 	try {
 		const nodeBuffer = await fs.readFile(tarballPath);
-		const { files, rootDir } = await unpack(nodeBuffer.buffer.slice(nodeBuffer.byteOffset, nodeBuffer.byteOffset + nodeBuffer.byteLength));
+		const buffer = nodeBuffer.buffer.slice(nodeBuffer.byteOffset, nodeBuffer.byteOffset + nodeBuffer.byteLength);
+		const { files, rootDir } = await unpack(buffer);
 		return files.map((file) => file.name.slice(rootDir.length + 1));
 	} finally {
 		await fs.rm(destination, { recursive: true });
@@ -19189,18 +19174,16 @@ async function detect(options = {}) {
 				if (result) return result;
 				break;
 			}
-			case "install-metadata":
-				for (const metadata of Object.keys(INSTALL_METADATA)) {
-					const fileOrDir = metadata.endsWith("/") ? "dir" : "file";
-					if (await pathExists(path.join(directory, metadata), fileOrDir)) {
-						const name = INSTALL_METADATA[metadata];
-						return {
-							name,
-							agent: name === "yarn" ? isMetadataYarnClassic(metadata) ? "yarn" : "yarn@berry" : name
-						};
-					}
+			case "install-metadata": for (const metadata of Object.keys(INSTALL_METADATA)) {
+				const fileOrDir = metadata.endsWith("/") ? "dir" : "file";
+				if (await pathExists(path.join(directory, metadata), fileOrDir)) {
+					const name = INSTALL_METADATA[metadata];
+					return {
+						name,
+						agent: name === "yarn" ? isMetadataYarnClassic(metadata) ? "yarn" : "yarn@berry" : name
+					};
 				}
-				break;
+			}
 		}
 		if (stopDir?.(directory)) break;
 	}
@@ -19557,7 +19540,6 @@ function getHighlighter(color) {
 		default:
 			bold = (s) => import_picocolors.default.bold(s);
 			warn = (s) => import_picocolors.default.yellow(s);
-			break;
 	}
 	return {
 		bold,
@@ -19603,9 +19585,7 @@ const runPublint = async () => {
 			case "warning":
 				warning(formattedMessage, properties);
 				break;
-			default:
-				notice(formattedMessage, properties);
-				break;
+			default: notice(formattedMessage, properties);
 		}
 	});
 	return !messages.some(({ type }) => type === "error");
