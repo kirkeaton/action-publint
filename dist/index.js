@@ -1739,12 +1739,19 @@ var require_request$1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 				arr.push(val[i]);
 			} else if (val[i] === null) arr.push("");
 			else if (typeof val[i] === "object") throw new InvalidArgumentError(`invalid ${key} header`);
-			else arr.push(`${val[i]}`);
+			else {
+				const str = `${val[i]}`;
+				if (!isValidHeaderValue(str)) throw new InvalidArgumentError(`invalid ${key} header`);
+				arr.push(str);
+			}
 			val = arr;
 		} else if (typeof val === "string") {
 			if (!isValidHeaderValue(val)) throw new InvalidArgumentError(`invalid ${key} header`);
 		} else if (val === null) val = "";
-		else val = `${val}`;
+		else {
+			val = `${val}`;
+			if (!isValidHeaderValue(val)) throw new InvalidArgumentError(`invalid ${key} header`);
+		}
 		if (headerName === "host") {
 			if (request.host !== null) throw new InvalidArgumentError("duplicate host header");
 			if (typeof val !== "string") throw new InvalidArgumentError("invalid host header");
@@ -5208,7 +5215,7 @@ var require_client_h1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	const util = require_util$7();
 	const { channels } = require_diagnostics();
 	const timers = require_timers();
-	const { RequestContentLengthMismatchError, ResponseContentLengthMismatchError, RequestAbortedError, HeadersTimeoutError, HeadersOverflowError, SocketError, InformationalError, BodyTimeoutError, HTTPParserError, ResponseExceededMaxSizeError } = require_errors();
+	const { RequestContentLengthMismatchError, ResponseContentLengthMismatchError, RequestAbortedError, InvalidArgumentError, HeadersTimeoutError, HeadersOverflowError, SocketError, InformationalError, BodyTimeoutError, HTTPParserError, ResponseExceededMaxSizeError } = require_errors();
 	const { kUrl, kReset, kClient, kParser, kBlocking, kRunning, kPending, kSize, kWriting, kQueue, kNoRef, kKeepAliveDefaultTimeout, kHostHeader, kPendingIdx, kRunningIdx, kError, kPipelining, kSocket, kKeepAliveTimeoutValue, kMaxHeadersSize, kKeepAliveMaxTimeout, kKeepAliveTimeoutThreshold, kHeadersTimeout, kBodyTimeout, kStrictContentLength, kMaxRequests, kCounter, kMaxResponseSize, kOnError, kResume, kHTTPContext } = require_symbols$4();
 	const constants = require_constants$3();
 	const EMPTY_BUF = Buffer.alloc(0);
@@ -5800,7 +5807,17 @@ var require_client_h1 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			if (request.contentType == null) headers.push("content-type", contentType);
 			body = bodyStream.stream;
 			contentLength = bodyStream.length;
-		} else if (util.isBlobLike(body) && request.contentType == null && body.type) headers.push("content-type", body.type);
+		} else if (util.isBlobLike(body) && request.contentType == null) {
+			const contentType = body.type;
+			if (contentType) {
+				const contentTypeValue = `${contentType}`;
+				if (!util.isValidHeaderValue(contentTypeValue)) {
+					util.errorRequest(client, request, new InvalidArgumentError("invalid content-type header"));
+					return false;
+				}
+				headers.push("content-type", contentTypeValue);
+			}
+		}
 		if (body && typeof body.read === "function") body.read(0);
 		const bodyLength = util.bodyLength(body);
 		contentLength = bodyLength ?? contentLength;
@@ -7722,6 +7739,18 @@ var require_retry_handler = /* @__PURE__ */ __commonJSMin(((exports, module) => 
 		const current = Date.now();
 		return new Date(retryAfter).getTime() - current;
 	}
+	function validatePartialResponseContentLength(headers, range, statusCode, retryCount) {
+		const contentLength = headers["content-length"];
+		if (contentLength == null) return null;
+		if (!Number.isFinite(range.start) || !Number.isFinite(range.end)) return null;
+		const length = Number(contentLength);
+		const expectedLength = range.end - range.start + 1;
+		if (!Number.isFinite(length) || length !== expectedLength) return new RequestRetryError("Content-Length mismatch", statusCode, {
+			headers,
+			data: { count: retryCount }
+		});
+		return null;
+	}
 	var RetryHandler = class RetryHandler {
 		constructor(opts, handlers) {
 			const { retryOptions, ...dispatchOpts } = opts;
@@ -7859,6 +7888,11 @@ var require_retry_handler = /* @__PURE__ */ __commonJSMin(((exports, module) => 
 					}));
 					return false;
 				}
+				const contentLengthError = validatePartialResponseContentLength(headers, contentRange, statusCode, this.retryCount);
+				if (contentLengthError != null) {
+					this.abort(contentLengthError);
+					return false;
+				}
 				const { start, size, end = size - 1 } = contentRange;
 				assert$15(this.start === start, "content-range mismatch");
 				assert$15(this.end == null || this.end === end, "content-range mismatch");
@@ -7869,6 +7903,11 @@ var require_retry_handler = /* @__PURE__ */ __commonJSMin(((exports, module) => 
 				if (statusCode === 206) {
 					const range = parseRangeHeader(headers["content-range"]);
 					if (range == null) return this.handler.onHeaders(statusCode, rawHeaders, resume, statusMessage);
+					const contentLengthError = validatePartialResponseContentLength(headers, range, statusCode, this.retryCount);
+					if (contentLengthError != null) {
+						this.abort(contentLengthError);
+						return false;
+					}
 					const { start, size, end = size - 1 } = range;
 					assert$15(start != null && Number.isFinite(start), "content-range mismatch");
 					assert$15(end != null && Number.isFinite(end), "invalid content-length");
@@ -13322,16 +13361,54 @@ var require_util$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	function validateCookiePath(path) {
 		for (let i = 0; i < path.length; ++i) {
 			const code = path.charCodeAt(i);
-			if (code < 32 || code === 127 || code === 59) throw new Error("Invalid cookie path");
+			if (code < 32 || code > 126 || code === 59) throw new Error("Invalid cookie path");
 		}
 	}
 	/**
-	* I have no idea why these values aren't allowed to be honest,
-	* but Deno tests these. - Khafra
+	* <let-dig> ::= <letter> | <digit>
+	*
+	* <letter> ::= any one of the 52 alphabetic characters A through Z in
+	* upper case and a through z in lower case
+	*
+	* <digit> ::= any one of the ten digits 0 through 9r
+	*
+	* @see https://www.rfc-editor.org/rfc/rfc1034#section-3.5
+	* @param {number} code
+	*/
+	function isLetterOrDigit(code) {
+		return code >= 48 && code <= 57 || code >= 65 && code <= 90 || code >= 97 && code <= 122;
+	}
+	/**
+	* Validates a cookie domain against the "preferred name syntax".
+	*
+	* <domain>      ::= <subdomain> | " "
+	* <subdomain>   ::= <label> | <subdomain> "." <label>
+	* <label>       ::= <let-dig> [ [ <ldh-str> ] <let-dig> ]
+	* <ldh-str>     ::= <let-dig-hyp> | <let-dig-hyp> <ldh-str>
+	* <let-dig-hyp> ::= <let-dig> | "-"
+	*
+	* @see https://www.rfc-editor.org/rfc/rfc1034#section-3.5
+	* @see https://www.rfc-editor.org/rfc/rfc1123#section-2.1
+	* @see https://www.rfc-editor.org/rfc/rfc1035#section-2.3.4
 	* @param {string} domain
 	*/
 	function validateCookieDomain(domain) {
-		if (domain.startsWith("-") || domain.endsWith(".") || domain.endsWith("-")) throw new Error("Invalid cookie domain");
+		if (domain === " ") return;
+		if (domain.length > 255) throw new Error("Invalid cookie domain");
+		let labelLength = 0;
+		for (let i = 0; i < domain.length; ++i) {
+			const code = domain.charCodeAt(i);
+			if (code === 46) {
+				if (labelLength === 0) throw new Error("Invalid cookie domain");
+				if (domain.charCodeAt(i - 1) === 45) throw new Error("Invalid cookie domain");
+				labelLength = 0;
+				continue;
+			}
+			if (labelLength === 0 && !isLetterOrDigit(code)) throw new Error("Invalid cookie domain");
+			if (!isLetterOrDigit(code) && code !== 45) throw new Error("Invalid cookie domain");
+			if (++labelLength > 63) throw new Error("Invalid cookie domain");
+		}
+		if (labelLength === 0 || domain.charCodeAt(domain.length - 1) === 45) throw new Error("Invalid cookie domain");
 	}
 	const IMFDays = [
 		"Sun",
@@ -13446,7 +13523,11 @@ var require_util$2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		for (const part of cookie.unparsed) {
 			if (!part.includes("=")) throw new Error("Invalid unparsed");
 			const [key, ...value] = part.split("=");
-			out.push(`${key.trim()}=${value.join("=")}`);
+			const trimmedKey = key.trim();
+			const joinedValue = value.join("=");
+			validateCookieName(trimmedKey);
+			validateCookieValue(joinedValue);
+			out.push(`${trimmedKey}=${joinedValue}`);
 		}
 		return out.join("; ");
 	}
@@ -17712,7 +17793,7 @@ function createNodeVfs() {
 			return path.join(...parts);
 		},
 		pathRelative(from, to) {
-			return path.relative(from, to);
+			return path.relative(from, to).replaceAll(path.sep, "/");
 		},
 		getDirName(path$2) {
 			return path.dirname(path$2);
@@ -17775,6 +17856,7 @@ const commonInternalPaths = [
 	"Dockerfile",
 	"tsconfig.tsbuildinfo"
 ];
+const commonInternalTestFileRegex = /\.(test|spec)\.[cm]?[jt]sx?$/;
 const licenseFiles = [
 	/^copying/i,
 	/^licence/i,
@@ -18216,7 +18298,7 @@ function startsWithShebang(code) {
 * @property {(path: string) => Promise<boolean>} isPathDir
 * @property {(path: string) => Promise<boolean>} isPathExist
 * @property {(...paths: string[]) => string} pathJoin
-* @property {(from: string, to: string) => string} pathRelative
+* @property {(from: string, to: string) => string} pathRelative Returned path uses `/` separators
 * @property {(path: string) => string} getDirName
 * @property {(path: string) => string} getExtName
 */
@@ -18248,20 +18330,29 @@ async function core({ pkgDir, vfs, level, strict, _packedFiles }) {
 	const [browser, browserPkgPath] = getPublishedField(rootPkg, "browser");
 	const [exports, exportsPkgPath] = getPublishedField(rootPkg, "exports");
 	const [imports, importsPkgPath] = getPublishedField(rootPkg, "imports");
+	/** @type {string[]} */
+	const internalTestFilePaths = [];
+	const crawlNestedPackageJsonPromise = crawlNestedPackageJson(pkgDir);
+	promiseQueue.push(() => crawlNestedPackageJsonPromise);
 	if (rootPkg.files == null) promiseQueue.push(async () => {
+		/** @type {string[]} */
+		const internalFilePaths = [];
 		for (const p of commonInternalPaths) {
 			const internalPath = vfs.pathJoin(pkgDir, p);
-			if (_packedFiles && _packedFiles.every((f) => !f.startsWith(internalPath))) continue;
-			if (await vfs.isPathExist(internalPath)) {
-				messages.push({
-					code: "USE_FILES",
-					args: {},
-					path: ["name"],
-					type: "suggestion"
-				});
-				break;
+			if (_packedFiles) {
+				if (!(p.endsWith("/") ? _packedFiles.some((f) => f.startsWith(internalPath)) : _packedFiles.includes(internalPath))) continue;
 			}
+			if (await vfs.isPathExist(internalPath)) internalFilePaths.push("/" + p);
 		}
+		await crawlNestedPackageJsonPromise;
+		const matchedDirs = internalFilePaths.filter((p) => p.endsWith("/"));
+		internalFilePaths.push(...internalTestFilePaths.filter((p) => !matchedDirs.some((d) => p.startsWith(d))));
+		if (internalFilePaths.length > 0) messages.push({
+			code: "USE_FILES",
+			args: { internalFilePaths },
+			path: ["name"],
+			type: "suggestion"
+		});
 	});
 	if (rootPkg.license == null) promiseQueue.push(async () => {
 		const topFiles = await vfs.readDir(pkgDir);
@@ -18499,9 +18590,6 @@ async function core({ pkgDir, vfs, level, strict, _packedFiles }) {
 	const [bin, binPkgPath] = getPublishedField(rootPkg, "bin");
 	if (bin) crawlBin(bin, binPkgPath);
 	if (imports && ensureTypeOfField(imports, ["object"], importsPkgPath)) crawlExportsOrImports(imports, importsPkgPath, true);
-	promiseQueue.push(async () => {
-		await crawlNestedPackageJson(pkgDir);
-	});
 	await promiseQueue.wait();
 	if (strict) {
 		for (const message of messages) if (message.type === "warning") message.type = "error";
@@ -19004,6 +19092,7 @@ async function core({ pkgDir, vfs, level, strict, _packedFiles }) {
 				await crawlNestedPackageJson(itemPath);
 				continue;
 			}
+			if (rootPkg.files == null && commonInternalTestFileRegex.test(item) && (!_packedFiles || _packedFiles.includes(itemPath))) internalTestFilePaths.push("/" + vfs.pathRelative(pkgDir, itemPath));
 			if (item !== "package.json" || itemPath === rootPkgPath) continue;
 			if (_packedFiles && !_packedFiles.includes(itemPath)) continue;
 			let nestedPkg;
@@ -19520,7 +19609,12 @@ function formatMessage(m, pkg, opts = {}) {
 		}
 		case "USE_EXPORTS_BROWSER": return `${h.bold("pkg.browser")} with a string value can be refactored to use ${h.bold("pkg.exports")} and the ${h.bold("\"browser\"")} condition to declare browser-specific exports. e.g. ${h.bold("pkg.exports[\".\"].browser")}: "${h.bold(pv(m.path))}". (This may be a breaking change)`;
 		case "USE_EXPORTS_OR_IMPORTS_BROWSER": return `${h.bold("pkg.browser")} with an object value can be refactored to use ${h.bold("pkg.exports")}/${h.bold("pkg.imports")} and the ${h.bold("\"browser\"")} condition to declare browser-specific exports. (This may be a breaking change)`;
-		case "USE_FILES": return `The package ${h.bold("publishes internal tests or config files")}. You can use ${h.bold("pkg.files")} to only publish certain files and save user bandwidth.`;
+		case "USE_FILES": {
+			const paths = m.args.internalFilePaths;
+			const shown = paths.slice(0, 5).map((p) => h.bold(p)).join(", ");
+			const rest = paths.length > 5 ? ` and ${paths.length - 5} more` : "";
+			return `The package ${h.bold("publishes internal tests or config files")} (${shown}${rest}). You can use ${h.bold("pkg.files")} to only publish certain files and save user bandwidth.`;
+		}
 		case "USE_SIDE_EFFECTS": return `The package appears to be consumed by bundlers but does not specify ${h.bold("\"sideEffects\"")}. Consider adding ${h.bold("\"sideEffects\"")}: ${h.bold("false")} so bundlers can optimize tree-shaking if your package has no side effects.`;
 		case "USE_TYPE": return `The package does not specify the ${h.bold("\"type\"")} field. Node.js may attempt to detect the package type causing a small performance hit. Consider adding ${h.bold("\"type\"")}: "${h.bold("commonjs")}".`;
 		case "USE_ENGINES_NODE": return `The package does not specify the ${h.bold("\"engines.node\"")} field. Consumers may install it on an unsupported Node.js version. Consider adding the field with your actual minimum supported Node.js version. (This may be a breaking change)`;
