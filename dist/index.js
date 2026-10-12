@@ -19462,7 +19462,8 @@ var init_constants = __esmMin((() => {
 		"bun",
 		"deno",
 		"nub",
-		"aube"
+		"aube",
+		"upm"
 	];
 	LOCKS = {
 		"aube-lock.yaml": "aube",
@@ -19471,6 +19472,7 @@ var init_constants = __esmMin((() => {
 		"bun.lockb": "bun",
 		"deno.lock": "deno",
 		"nub.lock": "nub",
+		"upm.lock": "upm",
 		"pnpm-lock.yaml": "pnpm",
 		"pnpm-workspace.yaml": "pnpm",
 		"yarn.lock": "yarn",
@@ -19481,6 +19483,7 @@ var init_constants = __esmMin((() => {
 		"node_modules/.aube/": "aube",
 		"node_modules/.deno/": "deno",
 		"node_modules/.pnpm/": "pnpm",
+		"node_modules/.upm/": "upm",
 		"node_modules/.yarn-state.yml": "yarn",
 		"node_modules/.yarn_integrity": "yarn",
 		"node_modules/.package-lock.json": "npm",
@@ -19495,7 +19498,9 @@ var init_constants = __esmMin((() => {
 //#region node_modules/package-manager-detector/dist/detect.mjs
 var detect_exports = /* @__PURE__ */ __exportAll({
 	detect: () => detect,
-	getUserAgent: () => getUserAgent
+	getUserAgent: () => getUserAgent,
+	normalizeAgentVersion: () => normalizeAgentVersion,
+	resolveAgent: () => resolveAgent
 });
 async function pathExists(path2, type) {
 	try {
@@ -19572,56 +19577,57 @@ async function detect(options = {}) {
 	}
 	return null;
 }
+function normalizeAgentVersion(version) {
+	return version?.match(/\d+(\.\d+){0,2}/)?.[0] ?? version;
+}
 function getNameAndVer(pkg) {
-	const handelVer = (version) => version?.match(/\d+(\.\d+){0,2}/)?.[0] ?? version;
 	if (typeof pkg.packageManager === "string") {
 		const [name, ver] = pkg.packageManager.replace(/^\^/, "").split("@");
 		return {
 			name,
-			ver: handelVer(ver)
+			ver: normalizeAgentVersion(ver)
 		};
 	}
 	if (typeof pkg.devEngines?.packageManager?.name === "string") return {
 		name: pkg.devEngines.packageManager.name,
-		ver: handelVer(pkg.devEngines.packageManager.version)
+		ver: normalizeAgentVersion(pkg.devEngines.packageManager.version)
 	};
 }
 async function handlePackageManager(filepath, options) {
 	try {
 		const content = await fs.readFile(filepath, "utf8");
 		const pkg = options.packageJsonParser ? await options.packageJsonParser(content, filepath) : JSON.parse(content);
-		let agent;
 		const nameAndVer = getNameAndVer(pkg);
-		if (nameAndVer) {
-			const name = nameAndVer.name;
-			const ver = nameAndVer.ver;
-			let version = ver;
-			if (name === "yarn" && ver && Number.parseInt(ver) > 1) {
-				agent = "yarn@berry";
-				version = "berry";
-				return {
-					name,
-					agent,
-					version
-				};
-			} else if (name === "pnpm" && ver && Number.parseInt(ver) < 7) {
-				agent = "pnpm@6";
-				return {
-					name,
-					agent,
-					version
-				};
-			} else if (AGENTS.includes(name)) {
-				agent = name;
-				return {
-					name,
-					agent,
-					version
-				};
-			} else return options.onUnknown?.(pkg.packageManager) ?? null;
-		}
+		if (nameAndVer) return resolveAgent(nameAndVer.name, nameAndVer.ver) ?? options.onUnknown?.(pkg.packageManager) ?? null;
 	} catch {}
 	return null;
+}
+function resolveAgent(name, ver) {
+	let agent;
+	let version = ver;
+	if (name === "yarn" && ver && Number.parseInt(ver) > 1) {
+		agent = "yarn@berry";
+		version = "berry";
+		return {
+			name,
+			agent,
+			version
+		};
+	} else if (name === "pnpm" && ver && Number.parseInt(ver) < 7) {
+		agent = "pnpm@6";
+		return {
+			name,
+			agent,
+			version
+		};
+	} else if (AGENTS.includes(name)) {
+		agent = name;
+		return {
+			name,
+			agent,
+			version
+		};
+	}
 }
 function isMetadataYarnClassic(metadataPath) {
 	return metadataPath.endsWith(".yarn_integrity");
