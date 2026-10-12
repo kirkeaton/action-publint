@@ -18057,7 +18057,7 @@ const invalidJsxExtensions = [
 	".mjsx",
 	".cjsx",
 	".mtsx",
-	".cjsx"
+	".ctsx"
 ];
 const knownBrowserishConditions = [
 	"worker",
@@ -18993,7 +18993,7 @@ async function core({ pkgDir, vfs, level, strict, _packedFiles }) {
 			});
 		});
 		else if (typeof fieldValue === "object") {
-			for (const key in fieldValue) if (typeof fieldValue[key] === "string") promiseQueue.push(async () => {
+			for (const key in fieldValue) if (typeof fieldValue[key] === "string" && fieldValue[key].startsWith(".")) promiseQueue.push(async () => {
 				await readFile(vfs.pathJoin(pkgDir, fieldValue[key]), currentPath.concat(key), [".js", "/index.js"]);
 			});
 		}
