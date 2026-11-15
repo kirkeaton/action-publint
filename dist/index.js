@@ -1,9 +1,9 @@
 import { createRequire } from "node:module";
-import * as os$2 from "os";
-import os, { EOL } from "os";
-import * as fs$2 from "fs";
+import * as os from "os";
+import os$1, { EOL } from "os";
+import * as fs from "fs";
 import { constants, promises } from "fs";
-import * as path$1 from "path";
+import * as path from "path";
 import * as events from "events";
 import { PassThrough } from "node:stream";
 import util from "node:util";
@@ -11,14 +11,14 @@ import zlib from "node:zlib";
 import { fileURLToPath } from "node:url";
 import * as child from "child_process";
 import { setTimeout as setTimeout$1 } from "timers";
-import path, { basename, delimiter, dirname, normalize, resolve } from "node:path";
-import fs, { readFile } from "node:fs/promises";
+import path$1, { basename, delimiter, dirname, normalize, resolve } from "node:path";
+import fs$1, { readFile } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import process$1, { cwd } from "node:process";
 import { pipeline } from "node:stream/promises";
 import readline from "node:readline";
-import fs$1, { closeSync, openSync, readSync, statSync } from "node:fs";
-import os$1 from "node:os";
+import fs$2, { closeSync, openSync, readSync, statSync } from "node:fs";
+import os$2 from "node:os";
 
 // \0rolldown/runtime.js
 var __create = Object.create;
@@ -36,18 +36,18 @@ var __esmMin = (fn, res, err) => () => {
 	}
 };
 var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod, mod.exports), cb = null), mod.exports);
-var __exportAll = (all, no_symbols) => {
-	let target = {};
+var __exportAll = (all, flags) => {
+	let target = Object.setPrototypeOf({}, null);
 	for (var name in all) {
 		__defProp(target, name, {
 			get: all[name],
 			enumerable: true
 		});
 	}
-	if (!no_symbols) {
+	if (!(flags & 1)) {
 		__defProp(target, Symbol.toStringTag, { value: "Module" });
 	}
-	return target;
+	return flags & 2 ? target : Object.preventExtensions(target);
 };
 var __copyProps = (to, from, except, desc) => {
 	if (from && typeof from === "object" || typeof from === "function") {
@@ -133,7 +133,7 @@ function toCommandProperties(annotationProperties) {
 */
 function issueCommand(command, properties, message) {
 	const cmd = new Command(command, properties, message);
-	process.stdout.write(cmd.toString() + os$2.EOL);
+	process.stdout.write(cmd.toString() + os.EOL);
 }
 const CMD_STRING = "::";
 var Command = class {
@@ -6211,7 +6211,7 @@ var require_client_h2 = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 		});
 		return {
 			version: "h2",
-			defaultPipelining: Infinity,
+			defaultPipelining: 1e400,
 			write(...args) {
 				return writeH2(client, ...args);
 			},
@@ -9638,7 +9638,7 @@ var require_pending_interceptors_formatter = /* @__PURE__ */ __commonJSMin(((exp
 				"Status code": statusCode,
 				Persistent: persist ? PERSISTENT : NOT_PERSISTENT,
 				Invocations: timesInvoked,
-				Remaining: persist ? Infinity : times - timesInvoked
+				Remaining: persist ? 1e400 : times - timesInvoked
 			}));
 			this.logger.table(withPrettyHeaders);
 			return this.transform.read().toString();
@@ -10095,7 +10095,7 @@ var require_dns = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			pick: interceptorOpts?.pick ?? null,
 			dualStack,
 			affinity,
-			maxItems: interceptorOpts?.maxItems ?? Infinity
+			maxItems: interceptorOpts?.maxItems ?? 1e400
 		};
 		const instance = new DNSInstance(opts);
 		return (dispatch) => {
@@ -13190,7 +13190,7 @@ var require_cache = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 			}
 			return true;
 		}
-		#internalMatchAll(request, options, maxResponses = Infinity) {
+		#internalMatchAll(request, options, maxResponses = 1e400) {
 			let r = null;
 			if (request !== void 0) {
 				if (request instanceof Request) {
@@ -16700,9 +16700,9 @@ var __awaiter$5 = void 0 && (void 0).__awaiter || function(thisArg, _arguments, 
 		step((generator = generator.apply(thisArg, _arguments || [])).next());
 	});
 };
-const { chmod, copyFile, lstat, mkdir, open, readdir, rename, rm, rmdir, stat, symlink, unlink } = fs$2.promises;
+const { chmod, copyFile, lstat, mkdir, open, readdir, rename, rm, rmdir, stat, symlink, unlink } = fs.promises;
 const IS_WINDOWS$1 = process.platform === "win32";
-const READONLY = fs$2.constants.O_RDONLY;
+const READONLY = fs.constants.O_RDONLY;
 function exists(fsPath) {
 	return __awaiter$5(this, void 0, void 0, function* () {
 		try {
@@ -16740,7 +16740,7 @@ function tryGetExecutablePath(filePath, extensions) {
 		}
 		if (stats && stats.isFile()) {
 			if (IS_WINDOWS$1) {
-				const upperExt = path$1.extname(filePath).toUpperCase();
+				const upperExt = path.extname(filePath).toUpperCase();
 				if (extensions.some((validExt) => validExt.toUpperCase() === upperExt)) return filePath;
 			} else if (isUnixExecutable(stats)) return filePath;
 		}
@@ -16756,10 +16756,10 @@ function tryGetExecutablePath(filePath, extensions) {
 			if (stats && stats.isFile()) {
 				if (IS_WINDOWS$1) {
 					try {
-						const directory = path$1.dirname(filePath);
-						const upperName = path$1.basename(filePath).toUpperCase();
+						const directory = path.dirname(filePath);
+						const upperName = path.basename(filePath).toUpperCase();
 						for (const actualName of yield readdir(directory)) if (upperName === actualName.toUpperCase()) {
-							filePath = path$1.join(directory, actualName);
+							filePath = path.join(directory, actualName);
 							break;
 						}
 					} catch (err) {
@@ -16846,21 +16846,21 @@ function findInPath(tool) {
 		if (!tool) throw new Error("parameter 'tool' is required");
 		const extensions = [];
 		if (IS_WINDOWS$1 && process.env["PATHEXT"]) {
-			for (const extension of process.env["PATHEXT"].split(path$1.delimiter)) if (extension) extensions.push(extension);
+			for (const extension of process.env["PATHEXT"].split(path.delimiter)) if (extension) extensions.push(extension);
 		}
 		if (isRooted(tool)) {
 			const filePath = yield tryGetExecutablePath(tool, extensions);
 			if (filePath) return [filePath];
 			return [];
 		}
-		if (tool.includes(path$1.sep)) return [];
+		if (tool.includes(path.sep)) return [];
 		const directories = [];
 		if (process.env.PATH) {
-			for (const p of process.env.PATH.split(path$1.delimiter)) if (p) directories.push(p);
+			for (const p of process.env.PATH.split(path.delimiter)) if (p) directories.push(p);
 		}
 		const matches = [];
 		for (const directory of directories) {
-			const filePath = yield tryGetExecutablePath(path$1.join(directory, tool), extensions);
+			const filePath = yield tryGetExecutablePath(path.join(directory, tool), extensions);
 			if (filePath) matches.push(filePath);
 		}
 		return matches;
@@ -16931,11 +16931,11 @@ var ToolRunner = class extends events.EventEmitter {
 	_processLineBuffer(data, strBuffer, onLine) {
 		try {
 			let s = strBuffer + data.toString();
-			let n = s.indexOf(os$2.EOL);
+			let n = s.indexOf(os.EOL);
 			while (n > -1) {
 				onLine(s.substring(0, n));
-				s = s.substring(n + os$2.EOL.length);
-				n = s.indexOf(os$2.EOL);
+				s = s.substring(n + os.EOL.length);
+				n = s.indexOf(os.EOL);
 			}
 			return s;
 		} catch (err) {
@@ -17068,14 +17068,14 @@ var ToolRunner = class extends events.EventEmitter {
 	*/
 	exec() {
 		return __awaiter$3(this, void 0, void 0, function* () {
-			if (!isRooted(this.toolPath) && (this.toolPath.includes("/") || IS_WINDOWS && this.toolPath.includes("\\"))) this.toolPath = path$1.resolve(process.cwd(), this.options.cwd || process.cwd(), this.toolPath);
+			if (!isRooted(this.toolPath) && (this.toolPath.includes("/") || IS_WINDOWS && this.toolPath.includes("\\"))) this.toolPath = path.resolve(process.cwd(), this.options.cwd || process.cwd(), this.toolPath);
 			this.toolPath = yield which(this.toolPath, true);
 			return new Promise((resolve, reject) => __awaiter$3(this, void 0, void 0, function* () {
 				this._debug(`exec tool: ${this.toolPath}`);
 				this._debug("arguments:");
 				for (const arg of this.args) this._debug(`   ${arg}`);
 				const optionsNonNull = this._cloneExecOptions(this.options);
-				if (!optionsNonNull.silent && optionsNonNull.outStream) optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os$2.EOL);
+				if (!optionsNonNull.silent && optionsNonNull.outStream) optionsNonNull.outStream.write(this._getCommandString(optionsNonNull) + os.EOL);
 				const state = new ExecState(optionsNonNull, this.toolPath);
 				state.on("debug", (message) => {
 					this._debug(message);
@@ -17239,8 +17239,8 @@ var __awaiter$1 = void 0 && (void 0).__awaiter || function(thisArg, _arguments, 
 		step((generator = generator.apply(thisArg, _arguments || [])).next());
 	});
 };
-const platform = os.platform();
-const arch = os.arch();
+const platform = os$1.platform();
+const arch = os$1.arch();
 
 // node_modules/@actions/core/lib/core.js
 var __awaiter = void 0 && (void 0).__awaiter || function(thisArg, _arguments, P, generator) {
@@ -17717,9 +17717,9 @@ function resolvePackageManagerCommand(packageManager) {
 	return command;
 }
 async function getTempPackDir() {
-	const tempDir = os$1.tmpdir() + path.sep;
-	const tempPackDir = await fs.mkdtemp(tempDir + "publint-pack-");
-	return await fs.realpath(tempPackDir);
+	const tempDir = os$2.tmpdir() + path$1.sep;
+	const tempPackDir = await fs$1.mkdtemp(tempDir + "publint-pack-");
+	return await fs$1.realpath(tempPackDir);
 }
 
 // node_modules/@publint/pack/src/node/pack.js
@@ -17731,7 +17731,7 @@ async function pack(dir, opts) {
 	const packDestination = opts?.destination ?? dir;
 	if (opts?.destination) switch (packageManager) {
 		case "yarn":
-			command.push("--out", path.join(packDestination, "package.tgz"));
+			command.push("--out", path$1.join(packDestination, "package.tgz"));
 			break;
 		case "bun":
 			command.push("--destination", packDestination);
@@ -17746,14 +17746,14 @@ async function pack(dir, opts) {
 		default: command.push("--ignore-scripts");
 	}
 	const output = await exec(command[0], command.slice(1), { nodeOptions: { cwd: dir } });
-	const tarballFile = await fs.readdir(packDestination).then((files) => {
+	const tarballFile = await fs$1.readdir(packDestination).then((files) => {
 		return files.find((file) => file.endsWith(".tgz") && output.stdout.includes(file));
 	});
 	if (!tarballFile) {
 		if (output.stdout.startsWith("yarn pack v1")) throw new Error(`Yarn 1 is not supported to pack files. Command output:\n${JSON.stringify(output, null, 2)}`);
 		else throw new Error(`Failed to find packed tarball file in ${packDestination}. Command output:\n${JSON.stringify(output, null, 2)}`);
 	}
-	return path.join(packDestination, tarballFile);
+	return path$1.join(packDestination, tarballFile);
 }
 
 // node_modules/@publint/pack/src/node/pack-as-json.js
@@ -17785,7 +17785,7 @@ async function packAsJson(dir, opts) {
 		else if (packageManager === "yarn") stdout = fixYarnStdout(stdout);
 		return JSON.parse(stdout);
 	} finally {
-		if (!supportsDryRun && packDestination) await fs.rm(packDestination, { recursive: true });
+		if (!supportsDryRun && packDestination) await fs$1.rm(packDestination, { recursive: true });
 	}
 }
 /**
@@ -17926,12 +17926,12 @@ async function packAsListWithPack(dir, packageManager, ignoreScripts) {
 		destination
 	});
 	try {
-		const nodeBuffer = await fs.readFile(tarballPath);
+		const nodeBuffer = await fs$1.readFile(tarballPath);
 		const buffer = nodeBuffer.buffer.slice(nodeBuffer.byteOffset, nodeBuffer.byteOffset + nodeBuffer.byteLength);
 		const { files, rootDir } = await unpack(buffer);
 		return files.map((file) => file.name.slice(rootDir.length + 1));
 	} finally {
-		await fs.rm(destination, { recursive: true });
+		await fs$1.rm(destination, { recursive: true });
 	}
 }
 /**
@@ -17963,9 +17963,9 @@ function parsePnpmPackJson(stdoutJson) {
 /** @type {import('../index.d.ts').getPackDirectory} */
 async function getPackDirectory(dir, packageManager) {
 	if (packageManager === "pnpm") try {
-		const pkgJsonPath = path.resolve(dir, "package.json");
-		const pkgJsonData = JSON.parse(await fs.readFile(pkgJsonPath, "utf-8"));
-		if (pkgJsonData.publishConfig?.directory) return path.resolve(dir, pkgJsonData.publishConfig.directory);
+		const pkgJsonPath = path$1.resolve(dir, "package.json");
+		const pkgJsonData = JSON.parse(await fs$1.readFile(pkgJsonPath, "utf-8"));
+		if (pkgJsonData.publishConfig?.directory) return path$1.resolve(dir, pkgJsonData.publishConfig.directory);
 	} catch {}
 	return dir;
 }
@@ -17986,32 +17986,32 @@ const supportedPackageManagers = [
 function createNodeVfs() {
 	return {
 		async readFile(path) {
-			return await fs.readFile(path, "utf8");
+			return await fs$1.readFile(path, "utf8");
 		},
 		async readDir(path) {
-			return await fs.readdir(path);
+			return await fs$1.readdir(path);
 		},
 		async isPathDir(path) {
 			try {
-				return (await fs.stat(path)).isDirectory();
+				return (await fs$1.stat(path)).isDirectory();
 			} catch {
 				return false;
 			}
 		},
 		async isPathExist(path) {
-			return fs$1.existsSync(path);
+			return fs$2.existsSync(path);
 		},
 		pathJoin(...parts) {
-			return path.join(...parts);
+			return path$1.join(...parts);
 		},
 		pathRelative(from, to) {
-			return path.relative(from, to).replaceAll(path.sep, "/");
+			return path$1.relative(from, to).replaceAll(path$1.sep, "/");
 		},
-		getDirName(path$2) {
-			return path.dirname(path$2);
+		getDirName(path) {
+			return path$1.dirname(path);
 		},
-		getExtName(path$3) {
-			return path.extname(path$3);
+		getExtName(path) {
+			return path$1.extname(path);
 		}
 	};
 }
@@ -19468,7 +19468,7 @@ var detect_exports = /* @__PURE__ */ __exportAll({
 });
 async function pathExists(path2, type) {
 	try {
-		const stat = await fs.stat(path2);
+		const stat = await fs$1.stat(path2);
 		return type === "file" ? stat.isFile() : stat.isDirectory();
 	} catch {
 		return false;
@@ -19481,11 +19481,11 @@ function getUserAgent() {
 	return AGENTS.includes(name) ? name : null;
 }
 function* lookup(cwd = process$1.cwd()) {
-	let directory = path.resolve(cwd);
-	const { root } = path.parse(directory);
+	let directory = path$1.resolve(cwd);
+	const { root } = path$1.parse(directory);
 	while (directory && directory !== root) {
 		yield directory;
-		directory = path.dirname(directory);
+		directory = path$1.dirname(directory);
 	}
 }
 async function parsePackageJson(filepath, options) {
@@ -19500,19 +19500,19 @@ async function detect(options = {}) {
 	] } = options;
 	let stopDir;
 	if (typeof options.stopDir === "string") {
-		const resolved = path.resolve(options.stopDir);
+		const resolved = path$1.resolve(options.stopDir);
 		stopDir = (dir) => dir === resolved;
 	} else stopDir = options.stopDir;
 	for (const directory of lookup(cwd)) {
 		for (const strategy of strategies) switch (strategy) {
 			case "lockfile":
-				if (await pathExists(path.join(directory, "rush.json"), "file")) return {
+				if (await pathExists(path$1.join(directory, "rush.json"), "file")) return {
 					name: "pnpm",
 					agent: "pnpm-rush"
 				};
-				for (const lock of Object.keys(LOCKS)) if (await pathExists(path.join(directory, lock), "file")) {
+				for (const lock of Object.keys(LOCKS)) if (await pathExists(path$1.join(directory, lock), "file")) {
 					const name = LOCKS[lock];
-					const result = await parsePackageJson(path.join(directory, "package.json"), options);
+					const result = await parsePackageJson(path$1.join(directory, "package.json"), options);
 					if (result) return result;
 					else return {
 						name,
@@ -19522,13 +19522,13 @@ async function detect(options = {}) {
 				break;
 			case "packageManager-field":
 			case "devEngines-field": {
-				const result = await parsePackageJson(path.join(directory, "package.json"), options);
+				const result = await parsePackageJson(path$1.join(directory, "package.json"), options);
 				if (result) return result;
 				break;
 			}
 			case "install-metadata": for (const metadata of Object.keys(INSTALL_METADATA)) {
 				const fileOrDir = metadata.endsWith("/") ? "dir" : "file";
-				if (await pathExists(path.join(directory, metadata), fileOrDir)) {
+				if (await pathExists(path$1.join(directory, metadata), fileOrDir)) {
 					const name = INSTALL_METADATA[metadata];
 					return {
 						name,
@@ -19559,7 +19559,7 @@ function getNameAndVer(pkg) {
 }
 async function handlePackageManager(filepath, options) {
 	try {
-		const content = await fs.readFile(filepath, "utf8");
+		const content = await fs$1.readFile(filepath, "utf8");
 		const pkg = options.packageJsonParser ? await options.packageJsonParser(content, filepath) : JSON.parse(content);
 		const nameAndVer = getNameAndVer(pkg);
 		if (nameAndVer) return resolveAgent(nameAndVer.name, nameAndVer.ver) ?? options.onUnknown?.(pkg.packageManager) ?? null;
@@ -19672,7 +19672,7 @@ async function getPackedFiles(pkgDir, packDir, packageManager, log) {
 	return (await packAsList(pkgDir, {
 		packageManager,
 		ignoreScripts: true
-	})).map((file) => path.join(packDir, file));
+	})).map((file) => path$1.join(packDir, file));
 }
 
 // node_modules/picocolors/picocolors.js
